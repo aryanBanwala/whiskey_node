@@ -71,6 +71,13 @@ async function handleRequest(req, res) {
   }
 }
 
+app.get('/healthCheck', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    message: 'Bot API is running'
+  });
+});
+
 // Using a single, flexible endpoint.
 app.post('/api/webhook/whatsapp', handleRequest);
 
