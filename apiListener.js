@@ -8,6 +8,8 @@ const port = process.env.BOT_API_PORT || 3001;
 
 app.use(express.json());
 
+// whatsapp/apiListener.js
+
 /**
  * A helper function that processes and sends a single message payload using Baileys.
  * This is the core logic for each message.
@@ -28,13 +30,16 @@ async function processSingleMessage(messagePayload) {
       return { success: false, error: 'Bot failed to send message', for: userPhone, status: 500 };
     }
 
-    return { success: true, data: baileysResult, for: userPhone, status: 200 };
+    // --- THIS IS THE MODIFIED LINE ---
+    // We wrap baileysResult in data: { data: ... } to match the Python code's expectation
+    return { success: true, data: { data: baileysResult }, for: userPhone, status: 200 };
+    // --- END OF MODIFICATION ---
+
   } catch (error) {
     console.error(`[Bot API] Internal error for ${userPhone}:`, error.message);
     return { success: false, error: 'An internal error occurred in the bot service.', for: userPhone, status: 500 };
   }
 }
-
 
 /**
  * Main API endpoint that intelligently handles both single and bulk message requests.
