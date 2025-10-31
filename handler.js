@@ -2,7 +2,7 @@
 
 import { sendMessage } from './sender.js';
 import serviceSupabase from './supabase-whatsapp-defaultexport.js';
-import processWhatsAppMessage from './whatsappMessageProcessor.js';
+import processWhatsAppMessage, { handleDefaultMessage } from './whatsappMessageProcessor.js';
 
 /**
  * Handles incoming message events from Baileys.
@@ -242,6 +242,23 @@ export const handleMessage = async (sock, m) => {
             }
         }
     }
+
+    //- - - - - - HANDLE DEFAULT PROMPT - - - - - -
+    const defaultResponse = await handleDefaultMessage(mssg_data.userId);
+    console.log('defaultResponse', defaultResponse);
+    if (defaultResponse) {
+        const sentMsgInfo = await sendMessage(mssg_data.from, defaultResponse);
+        if (sentMsgInfo) {
+            await serviceSupabase.from('whatsapp_messages').insert({
+                user_id: mssg_data.userId,
+                msg_content: defaultResponse,
+                msg_id: sentMsgInfo.key.id || null,
+                phone_number: mssg_data.from,
+                sent_by: 'assistant',
+            });
+        }
+    }
+
   } catch (error) {
     console.error('[handleMessage] Uncaught error:', error?.message || String(error));
     console.error(error.stack);
